@@ -444,17 +444,7 @@ export default function DashboardPage() {
             </Col>
           </Row>
 
-          <Card className="mb-6">
-            <Space>
-              <span>Filter by date range:</span>
-              <RangePicker onChange={(dates) => {
-                if (dates) setDateRange([dates[0]!.toISOString(), dates[1]!.toISOString()]);
-                else setDateRange(null);
-              }} />
-              <Button onClick={fetchShifts} type="primary">Refresh Data</Button>
-              <Button onClick={() => { console.log('Shifts:', shifts); console.log('Stats:', stats); message.info('Check console'); }}>Debug Data</Button>
-            </Space>
-          </Card>
+          
 
           <Row gutter={[16, 16]} className="mb-6">
             <Col xs={24} lg={12}><Card title="Weekly Hours Trend"><Line data={getWeeklyData()} /></Card></Col>
