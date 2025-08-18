@@ -2,7 +2,7 @@
   "name": "Lief Healthcare - Staff Management",
   "short_name": "Lief Healthcare",
   "description": "Healthcare staff time tracking and management system",
-  "start_url": "/",
+  "start_url": ".",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#1890ff",

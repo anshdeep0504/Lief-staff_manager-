@@ -129,7 +129,7 @@ export default function PWAInstallButton() {
             type="info"
             showIcon
           />
-        ) : (
+        ) : deferredPrompt ? (
           <Button
             type="primary"
             onClick={installPWA}
@@ -139,6 +139,18 @@ export default function PWAInstallButton() {
           >
             {isLoading ? 'Installing…' : 'Install App'}
           </Button>
+        ) : (
+          <Alert
+            message="How to install"
+            description={
+              <Text>
+                If the install button isn&apos;t showing, open the browser menu and select <Text strong>Install app</Text>.
+                Ensure you&apos;re using Chrome or Edge over HTTPS, then reload once so the service worker takes control.
+              </Text>
+            }
+            type="info"
+            showIcon
+          />
         )}
       </div>
     </Card>
