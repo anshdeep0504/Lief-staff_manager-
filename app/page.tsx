@@ -1,103 +1,207 @@
-import Image from "next/image";
+"use client";
+
+import { useState, useEffect } from "react";
+import { supabase } from "../lib/supabase";
+import { Card, Row, Col, Statistic, Button, Space, Typography } from "antd";
+import { 
+  ClockCircleOutlined, 
+  CalendarOutlined,
+  TeamOutlined,
+} from "@ant-design/icons";
+import Link from "next/link";
+
+import PWAInstallButton from "./components/PWAInstallButton";
+import AuthForm from "./components/AuthForm";
+
+
+const { Title, Paragraph } = Typography;
 
 export default function Home() {
-  return (
-    <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="font-mono list-inside list-decimal text-sm/6 text-center sm:text-left">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] font-mono font-semibold px-1 py-0.5 rounded">
-              app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+  const [user, setUser] = useState<unknown>(null);
+  const [stats, setStats] = useState({
+    totalShifts: 0,
+    totalHours: 0,
+    activeUsers: 0
+  });
+  
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+  useEffect(() => {
+    checkUser();
+    if (user) {
+      fetchStats();
+    }
+  }, [user]);
+
+  const checkUser = async () => {
+    try {
+      const { data: { user }, error } = await supabase.auth.getUser();
+      if (error) {
+        console.warn('Auth not available or not configured. Continuing without user.');
+        setUser(null);
+        return;
+      }
+      setUser(user);
+    } catch (error) {
+      console.warn('Error checking user, continuing without user:', error);
+      setUser(null);
+    }
+  };
+
+  const handleAuthSuccess = () => {
+    checkUser(); // Refresh user state after successful authentication
+  };
+
+  const fetchStats = async () => {
+    try {
+      const { data: shifts, error } = await supabase
+        .from('shifts')
+        .select('*');
+
+      if (error) {
+        console.error('Error fetching stats:', error);
+        return;
+      }
+
+      if (shifts) {
+        const totalShifts = shifts.length;
+        const totalHours = shifts.reduce((sum, shift) => {
+          if (shift.clock_out_time) {
+            const duration = (new Date(shift.clock_out_time).getTime() - new Date(shift.clock_in_time).getTime()) / (1000 * 60 * 60);
+            return sum + duration;
+          }
+          return sum;
+        }, 0);
+        const activeUsers = new Set(shifts.map(s => s.user_id)).size;
+
+        setStats({
+          totalShifts,
+          totalHours: Math.round(totalHours * 100) / 100,
+          activeUsers
+        });
+      }
+    } catch (error) {
+      console.error('Error fetching stats:', error);
+    }
+  };
+
+  
+
+  if (!user) {
+    return <AuthForm onAuthSuccess={handleAuthSuccess} />;
+  }
+
+  return (
+    <div className="min-h-screen bg-gray-50 p-4 sm:p-6 md:p-8 lg:p-10">
+      <div className="w-full max-w-6xl mx-auto">
+        {/* PWA Install Button - First and Most Prominent */}
+        <PWAInstallButton />
+
+        <div className="mb-8">
+          <Title level={2} style={{ marginBottom: 4 }}>Welcome back{(user as any)?.email ? `, ${(user as any).email}` : ''}!</Title>
+          <Paragraph className="text-gray-600">
+            Manage your healthcare staff with fast clocking and clear insights.
+          </Paragraph>
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+
+        
+
+        {/* Quick Stats */}
+        <Row gutter={[16, 16]} className="mb-8">
+          <Col xs={24} sm={12} md={8}>
+            <Card className="shadow-sm">
+              <Statistic
+                title="Total Shifts"
+                value={stats.totalShifts}
+                prefix={<ClockCircleOutlined />}
+                valueStyle={{ color: '#3f8600' }}
+              />
+            </Card>
+          </Col>
+          <Col xs={24} sm={12} md={8}>
+            <Card className="shadow-sm">
+              <Statistic
+                title="Total Hours"
+                value={stats.totalHours}
+                prefix={<ClockCircleOutlined />}
+                suffix="hrs"
+                valueStyle={{ color: '#1890ff' }}
+              />
+            </Card>
+          </Col>
+          <Col xs={24} sm={12} md={8}>
+            <Card className="shadow-sm">
+              <Statistic
+                title="Active Users"
+                value={stats.activeUsers}
+                prefix={<TeamOutlined />}
+                valueStyle={{ color: '#722ed1' }}
+              />
+            </Card>
+          </Col>
+        </Row>
+
+        {/* Quick Actions */}
+        <Row gutter={[16, 16]} className="mb-8">
+          <Col xs={24} md={12}>
+            <Card title="Quick Actions" className="h-full shadow-sm">
+              <Space direction="vertical" className="w-full">
+                <Link href="/clock">
+                  <Button type="primary" block size="large" icon={<ClockCircleOutlined />}>
+                    Clock In/Out
+                  </Button>
+                </Link>
+                <Link href="/dashboard">
+                  <Button block size="large" icon={<CalendarOutlined />}>
+                    View Dashboard
+                  </Button>
+                </Link>
+              </Space>
+            </Card>
+          </Col>
+          <Col xs={24} md={12}>
+            <Card title="Recent Activity" className="h-full shadow-sm">
+              <div className="text-gray-500 text-center py-8">
+                <ClockCircleOutlined className="text-4xl mb-2" />
+                <p>No recent activity</p>
+                <p className="text-sm">Clock in to start tracking your time</p>
+              </div>
+            </Card>
+          </Col>
+        </Row>
+
+        {/* Features */}
+        <Card title="Features" className="shadow-sm">
+          <Row gutter={[16, 16]}>
+            <Col xs={24} sm={12} md={8}>
+              <div className="text-center p-4">
+                <ClockCircleOutlined className="text-3xl text-blue-500 mb-2" />
+                <Title level={4}>Time Tracking</Title>
+                <Paragraph>
+                  Clock in and out with GPS location tracking and optional notes.
+                </Paragraph>
+              </div>
+            </Col>
+            <Col xs={24} sm={12} md={8}>
+              <div className="text-center p-4">
+                <TeamOutlined className="text-3xl text-green-500 mb-2" />
+                <Title level={4}>Staff Management</Title>
+                <Paragraph>
+                  Monitor staff attendance and manage schedules efficiently.
+                </Paragraph>
+              </div>
+            </Col>
+            <Col xs={24} sm={12} md={8}>
+              <div className="text-center p-4">
+                <CalendarOutlined className="text-3xl text-purple-500 mb-2" />
+                <Title level={4}>Analytics</Title>
+                <Paragraph>
+                  View detailed reports and insights on staff performance.
+                </Paragraph>
+              </div>
+            </Col>
+          </Row>
+        </Card>
+      </div>
     </div>
   );
 }
