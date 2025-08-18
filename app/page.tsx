@@ -10,7 +10,7 @@ import {
 } from "@ant-design/icons";
 import Link from "next/link";
 
-import PWAInstallButton from "./components/PWAInstallButton";
+
 import AuthForm from "./components/AuthForm";
 
 
@@ -95,7 +95,7 @@ export default function Home() {
     <div className="min-h-screen bg-gray-50 p-4 sm:p-6 md:p-8 lg:p-10">
       <div className="w-full max-w-6xl mx-auto">
         {/* PWA Install Button - First and Most Prominent */}
-        <PWAInstallButton />
+        
 
         <div className="mb-8">
           <Title level={2} style={{ marginBottom: 4 }}>Welcome back{user?.email ? `, ${user.email}` : ''}!</Title>

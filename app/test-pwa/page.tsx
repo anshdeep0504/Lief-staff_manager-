@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { Card, Button, Alert, Space, Typography } from 'antd';
 import { CheckCircleOutlined, CloseCircleOutlined } from '@ant-design/icons';
-import PWAInstallButton from '../components/PWAInstallButton';
+
 
 const { Title, Text } = Typography;
 
@@ -144,9 +144,7 @@ export default function PWATestPage() {
           </Card>
 
           {/* PWA Install Button */}
-          <Card title="🚀 PWA Install Button" className="w-full">
-            <PWAInstallButton />
-          </Card>
+         
 
           {/* Manual Test Buttons */}
           <Card title="🧪 Manual Tests" className="w-full">
