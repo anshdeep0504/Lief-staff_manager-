@@ -38,7 +38,7 @@ export default function PWAInstallButton() {
 
       // Detect iOS
       const userAgent = window.navigator.userAgent.toLowerCase();
-      const isIos = /iphone|ipad|ipod/.test(userAgent) && !window.MSStream;
+      const isIos = /iphone|ipad|ipod/.test(userAgent) && !(window as unknown as { MSStream?: unknown }).MSStream;
       setIsIOS(isIos);
 
       // Service worker is registered in ServiceWorkerRegistration component
@@ -123,7 +123,7 @@ export default function PWAInstallButton() {
             message="Install on iOS"
             description={
               <Text>
-                Tap the <Text strong>Share</Text> button in Safari and choose <Text strong>"Add to Home Screen"</Text>
+                Tap the <Text strong>Share</Text> button in Safari and choose <Text strong>&quot;Add to Home Screen&quot;</Text>
               </Text>
             }
             type="info"

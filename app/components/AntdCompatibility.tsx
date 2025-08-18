@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect } from "react";
+import { useEffect } from "react";
 
 // React compatibility helper for Ant Design v5
 // Loaded at app root; avoids console overrides on React 19 to prevent errors

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { supabase } from "../../lib/supabase";
 import { Menu, Button, Avatar, Dropdown, Space, Drawer } from "antd";
 import { 
@@ -21,6 +21,22 @@ export default function Navigation() {
   const [isMobile, setIsMobile] = useState(false);
   const [isManager, setIsManager] = useState(false);
   const pathname = usePathname();
+
+  const checkUser = useCallback(async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      setUser(user);
+      if (user?.email) {
+        await checkIsManager(user.email);
+      } else {
+        setIsManager(false);
+      }
+    } catch (error) {
+      console.error('Error checking user:', error);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
   useEffect(() => {
     checkUser();
@@ -45,23 +61,9 @@ export default function Navigation() {
       subscription.unsubscribe();
       window.removeEventListener('resize', handleResize);
     };
-  }, []);
+  }, [checkUser]);
 
-  const checkUser = async () => {
-    try {
-      const { data: { user } } = await supabase.auth.getUser();
-      setUser(user);
-      if ((user as any)?.email) {
-        await checkIsManager((user as any).email as string);
-      } else {
-        setIsManager(false);
-      }
-    } catch (error) {
-      console.error('Error checking user:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
+  
 
   const checkIsManager = async (email: string) => {
     try {
@@ -69,7 +71,7 @@ export default function Navigation() {
         .from('managers')
         .select('email')
         .eq('email', email)
-        .maybeSingle();
+        .single();
       if (error || !data) {
         // If table missing or RLS blocks, default to non-manager
         setIsManager(false);
@@ -172,7 +174,7 @@ export default function Navigation() {
           <Dropdown menu={{ items: userMenuItems }} placement="bottomRight" arrow>
             <Space className="cursor-pointer hover:bg-gray-50 px-2 sm:px-3 py-2 rounded-lg">
               <Avatar icon={<UserOutlined />} />
-              <span className="text-sm font-medium hidden sm:inline">{(user as any)?.email ?? 'Account'}</span>
+              <span className="text-sm font-medium hidden sm:inline">{(user as { email?: string } | null)?.email ?? 'Account'}</span>
             </Space>
           </Dropdown>
         </div>

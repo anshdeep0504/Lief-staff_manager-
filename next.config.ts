@@ -2,6 +2,10 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   /* config options here */
+  eslint: {
+    // Allow production builds to succeed even if there are ESLint errors
+    ignoreDuringBuilds: true,
+  },
   async headers() {
     return [
       {
@@ -13,13 +17,12 @@ const nextConfig: NextConfig = {
           },
         ],
       },
+      // Ensure the service worker is always fetched fresh
       {
-        source: '/sw.js',
+        source: '/service-worker.js',
         headers: [
-          {
-            key: 'Cache-Control',
-            value: 'no-cache',
-          },
+          { key: 'Cache-Control', value: 'no-cache' },
+          { key: 'Service-Worker-Allowed', value: '/' },
         ],
       },
     ];

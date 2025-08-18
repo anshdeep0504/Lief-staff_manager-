@@ -17,7 +17,7 @@ import AuthForm from "./components/AuthForm";
 const { Title, Paragraph } = Typography;
 
 export default function Home() {
-  const [user, setUser] = useState<unknown>(null);
+  const [user, setUser] = useState<{ email?: string } | null>(null);
   const [stats, setStats] = useState({
     totalShifts: 0,
     totalHours: 0,
@@ -27,9 +27,9 @@ export default function Home() {
 
   useEffect(() => {
     checkUser();
-    if (user) {
-      fetchStats();
-    }
+  }, []);
+  useEffect(() => {
+    if (user) fetchStats();
   }, [user]);
 
   const checkUser = async () => {
@@ -40,7 +40,7 @@ export default function Home() {
         setUser(null);
         return;
       }
-      setUser(user);
+      setUser(user as { email?: string } | null);
     } catch (error) {
       console.warn('Error checking user, continuing without user:', error);
       setUser(null);
@@ -97,7 +97,7 @@ export default function Home() {
         <PWAInstallButton />
 
         <div className="mb-8">
-          <Title level={2} style={{ marginBottom: 4 }}>Welcome back{(user as any)?.email ? `, ${(user as any).email}` : ''}!</Title>
+          <Title level={2} style={{ marginBottom: 4 }}>Welcome back{user?.email ? `, ${user.email}` : ''}!</Title>
           <Paragraph className="text-gray-600">
             Manage your healthcare staff with fast clocking and clear insights.
           </Paragraph>

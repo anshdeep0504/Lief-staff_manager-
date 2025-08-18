@@ -7,6 +7,20 @@ import { ClockCircleOutlined, EnvironmentOutlined, ReloadOutlined } from "@ant-d
 
 const { Text, Title } = Typography;
 
+// Utils outside component to avoid hook dependency noise
+const toRad = (value: number) => (value * Math.PI) / 180;
+const haversineKm = (lat1: number, lon1: number, lat2: number, lon2: number) => {
+  const R = 6371; // km
+  const dLat = toRad(lat2 - lat1);
+  const dLon = toRad(lon2 - lon1);
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) *
+    Math.sin(dLon / 2) * Math.sin(dLon / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return R * c;
+};
+
 interface Location {
   lat: number;
   long: number;
@@ -19,30 +33,24 @@ interface ManagerSettings {
   radius_km: number;
 }
 
+interface ActiveShift {
+  id: string;
+  clock_in_time: string;
+}
+
 export default function ClockPage() {
   const [note, setNote] = useState("");
   const [loading, setLoading] = useState(false);
   const [currentLocation, setCurrentLocation] = useState<Location | null>(null);
-  const [activeShift, setActiveShift] = useState<unknown>(null);
+  const [activeShift, setActiveShift] = useState<ActiveShift | null>(null);
   const [locationLoading, setLocationLoading] = useState(false);
   const locationIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const timerIntervalRef = useRef<NodeJS.Timeout | null>(null);
-  const [tick, setTick] = useState(0);
+  const [, setTick] = useState(0);
   const [settings, setSettings] = useState<ManagerSettings | null>(null);
   const [distanceKm, setDistanceKm] = useState<number | null>(null);
 
-  const toRad = (value: number) => (value * Math.PI) / 180;
-  const haversineKm = (lat1: number, lon1: number, lat2: number, lon2: number) => {
-    const R = 6371; // km
-    const dLat = toRad(lat2 - lat1);
-    const dLon = toRad(lon2 - lon1);
-    const a =
-      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-      Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) *
-      Math.sin(dLon / 2) * Math.sin(dLon / 2);
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-    return R * c;
-  };
+  const db = supabase as any;
 
   const computeDistance = useCallback((loc: Location, cfg: ManagerSettings | null) => {
     if (!cfg) return null;
@@ -51,7 +59,7 @@ export default function ClockPage() {
 
   const loadSettings = useCallback(async () => {
     try {
-      const { data, error } = await supabase
+      const { data, error } = await db
         .from('manager_settings')
         .select('perimeter_lat, perimeter_long, radius_km')
         .order('updated_at', { ascending: false })
@@ -61,7 +69,7 @@ export default function ClockPage() {
     } catch {
       // ignore
     }
-  }, []);
+  }, [db]);
 
   // Recompute distance when settings or location change
   useEffect(() => {
@@ -70,16 +78,7 @@ export default function ClockPage() {
     }
   }, [currentLocation, settings, computeDistance]);
 
-  const startLocationTracking = useCallback(() => {
-    // Check location every 30 seconds when active
-    locationIntervalRef.current = setInterval(() => {
-      if (activeShift) {
-        getLocation();
-      }
-    }, 30000);
-  }, [activeShift]);
-
-  const getLocation = () => {
+  const getLocation = useCallback(() => {
     setLocationLoading(true);
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
@@ -119,7 +118,16 @@ export default function ClockPage() {
       message.error("Geolocation is not supported by this browser.");
       setLocationLoading(false);
     }
-  };
+  }, [computeDistance, settings]);
+
+  const startLocationTracking = useCallback(() => {
+    // Check location every 30 seconds when active
+    locationIntervalRef.current = setInterval(() => {
+      if (activeShift) {
+        getLocation();
+      }
+    }, 30000);
+  }, [activeShift, getLocation]);
 
 
 
@@ -137,7 +145,7 @@ export default function ClockPage() {
         clearInterval(timerIntervalRef.current);
       }
     };
-  }, []);
+  }, [getLocation, loadSettings]);
 
   // Start/stop background tracking when active shift changes
   useEffect(() => {
@@ -173,16 +181,16 @@ export default function ClockPage() {
       const { user } = authData;
 
       if (user) {
-        const { data } = await supabase
+        const { data } = await db
           .from("shifts")
-          .select("*")
+          .select("id, clock_in_time")
           .eq("user_id", user.id)
           .is("clock_out_time", null)
           .order("clock_in_time", { ascending: false })
           .limit(1)
           .maybeSingle();
         
-        setActiveShift(data);
+        setActiveShift(data as ActiveShift | null);
       }
     } catch {
       // No active shift found
@@ -215,7 +223,7 @@ export default function ClockPage() {
       const { user } = authData;
 
       // Prevent multiple active shifts: check first
-      const { data: existing } = await supabase
+      const { data: existing } = await db
         .from("shifts")
         .select("*")
         .eq("user_id", user.id)
@@ -230,7 +238,7 @@ export default function ClockPage() {
         return;
       }
 
-      const { data: inserted, error } = await supabase.from("shifts").insert([{
+      const { data: inserted, error } = await db.from("shifts").insert([{
         user_id: user.id,
         clock_in_time: new Date().toISOString(),
         clock_in_location: `${currentLocation.lat},${currentLocation.long}`,
@@ -271,9 +279,9 @@ export default function ClockPage() {
       const { user } = authData;
 
       // Prefer updating the known active shift id; otherwise resolve the latest active
-      let activeId = (activeShift as any)?.id as string | undefined;
+      let activeId = activeShift?.id;
       if (!activeId) {
-        const { data: latest } = await supabase
+        const { data: latest } = await db
           .from("shifts")
           .select("id")
           .eq("user_id", user.id)
@@ -289,7 +297,7 @@ export default function ClockPage() {
         return;
       }
 
-      const { error } = await supabase
+      const { error } = await db
         .from("shifts")
         .update({
           clock_out_time: new Date().toISOString(),
@@ -384,9 +392,9 @@ export default function ClockPage() {
                 message="Currently Clocked In"
                 description={
                   <div>
-                    <Text strong>Since: {new Date((activeShift as any).clock_in_time).toLocaleString()}</Text><br />
+                    <Text strong>Since: {new Date(activeShift.clock_in_time).toLocaleString()}</Text><br />
                     <Text type="secondary">
-                      Duration: {Math.floor((Date.now() - new Date((activeShift as any).clock_in_time).getTime()) / 1000)} seconds
+                      Duration: {Math.floor((Date.now() - new Date(activeShift.clock_in_time).getTime()) / 1000)} seconds
                     </Text>
                   </div>
                 }

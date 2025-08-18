@@ -34,7 +34,7 @@ export default function AuthForm({ onAuthSuccess, onCancel, showCancel = false }
     setLoading(true);
     try {
       const emailForNotice = email;
-      const { data, error } = await supabase.auth.signUp({ 
+      const { error } = await supabase.auth.signUp({ 
         email, 
         password,
         options: {
