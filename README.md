@@ -1,6 +1,6 @@
 # Lief Healthcare - Staff Management System
 
-A comprehensive healthcare staff time tracking and management system built with Next.js, Supabase, and Ant Design. Now with full PWA support and enhanced features!
+A comprehensive healthcare staff time tracking and management system built with Next.js, Supabase, and Ant Design.
 
 ## ✨ Features
 
@@ -8,7 +8,6 @@ A comprehensive healthcare staff time tracking and management system built with 
 - 📍 **GPS Tracking**: Clock in/out with real-time location validation
 - 🎯 **Perimeter Management**: Configurable work area boundaries with manager settings
 - 📊 **Analytics Dashboard**: Comprehensive staff performance insights with real-time data
-- 📱 **Progressive Web App (PWA)**: Install on home screen, offline support, push notifications
 - 🎨 **Modern UI**: Beautiful interface built with Ant Design
 - 📈 **Real-time Data**: Live updates with Supabase real-time subscriptions
 - 🔔 **Smart Notifications**: Automatic alerts for perimeter entry/exit
@@ -190,12 +189,6 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 - Configure perimeter settings in the Settings tab
 - Filter data by date ranges
 
-### PWA Features
-- Install the app on your device's home screen
-- Enable push notifications for updates
-- Works offline with cached data
-- Native app-like experience
-
 ## 🔧 Environment Variables
 
 | Variable | Description | Required |
@@ -213,8 +206,8 @@ lief-healthcare/
 │   ├── dashboard/      # Manager dashboard with settings
 │   ├── components/     # Reusable components
 │   │   ├── ManagerSettings.tsx    # Perimeter configuration
-│   │   ├── PWARegistration.tsx    # PWA setup and notifications
-│   │   └── ...                    # Other components
+│   │   
+│   │   
 │   ├── globals.css     # Global styles
 │   ├── layout.tsx      # Root layout with PWA meta tags
 │   └── page.tsx        # Home page with PWA features
@@ -251,24 +244,8 @@ The app can be deployed to any platform that supports Next.js:
 - User authentication required for all operations
 - GPS perimeter validation for clock in/out
 - Secure API key handling
-- PWA security with HTTPS requirement
 
-## 📱 PWA Features
 
-### Installation
-- Add to home screen on mobile and desktop
-- Standalone app experience
-- Custom app icons and splash screens
-
-### Offline Support
-- Service worker caching
-- Offline-first architecture
-- Background sync capabilities
-
-### Push Notifications
-- Real-time alerts
-- Customizable notification settings
-- Cross-platform compatibility
 
 ## 🤝 Contributing
 
@@ -277,10 +254,6 @@ The app can be deployed to any platform that supports Next.js:
 3. Make your changes
 4. Test thoroughly
 5. Submit a pull request
-
-## 📄 License
-
-MIT License - see LICENSE file for details
 
 ## 🆘 Support
 
@@ -293,7 +266,6 @@ For issues and questions:
 
 - [x] Push notifications for clock in/out
 - [x] Advanced reporting and analytics
-- [x] PWA functionality
 - [x] Manager perimeter settings
 - [x] Real-time location tracking
 - [ ] Multi-location support
