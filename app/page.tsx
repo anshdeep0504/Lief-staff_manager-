@@ -53,7 +53,7 @@ export default function Home() {
 
   const fetchStats = async () => {
     try {
-      const { data: shifts, error } = await supabase
+      const { data: shifts, error } = await (supabase as any)
         .from('shifts')
         .select('*');
 
@@ -63,15 +63,16 @@ export default function Home() {
       }
 
       if (shifts) {
-        const totalShifts = shifts.length;
-        const totalHours = shifts.reduce((sum, shift) => {
+        const rows = shifts as any[];
+        const totalShifts = rows.length;
+        const totalHours = rows.reduce((sum: number, shift: any) => {
           if (shift.clock_out_time) {
             const duration = (new Date(shift.clock_out_time).getTime() - new Date(shift.clock_in_time).getTime()) / (1000 * 60 * 60);
             return sum + duration;
           }
           return sum;
         }, 0);
-        const activeUsers = new Set(shifts.map(s => s.user_id)).size;
+        const activeUsers = new Set(rows.map((s: any) => s.user_id)).size;
 
         setStats({
           totalShifts,

@@ -36,13 +36,13 @@ export default function ProfilePage() {
           return;
         }
         setUserEmail(user.email ?? null);
-        const { data, error } = await supabase
-          .from<ShiftRow>("shifts")
+        const { data, error } = await (supabase as any)
+          .from("shifts")
           .select("*")
-          .eq("user_id", user.id)
-          .order("clock_in_time", { ascending: false });
+          .order("clock_in_time", { ascending: false })
+          .eq("user_id", user.id);
         if (error) throw error;
-        const processed = (data ?? []).map((s) => ({
+        const processed = ((data ?? []) as ShiftRow[]).map((s: ShiftRow) => ({
           ...s,
           duration_hours: s.clock_out_time
             ? (new Date(s.clock_out_time).getTime() - new Date(s.clock_in_time).getTime()) / (1000 * 60 * 60)

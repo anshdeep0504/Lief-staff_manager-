@@ -30,11 +30,6 @@ const createMockClient = () => ({
               single: () => Promise.resolve({ data: null, error: new Error('Supabase not configured') })
             })
           }),
-          eq: () => ({
-            is: () => ({
-              single: () => Promise.resolve({ data: null, error: new Error('Supabase not configured') })
-            })
-          }),
           is: () => ({
             single: () => Promise.resolve({ data: null, error: new Error('Supabase not configured') })
           }),

@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { supabase } from "../../lib/supabase";
 import { Card, Alert, Space, Typography, Button, Divider, Descriptions } from "antd";
 import { CheckCircleOutlined, CloseCircleOutlined, ExclamationCircleOutlined, ReloadOutlined, BugOutlined } from "@ant-design/icons";
+import { INSPECT_MAX_BYTES } from "buffer";
 
 const { Text, Title } = Typography;
 
@@ -49,7 +50,7 @@ export default function ConfigCheck() {
     
     try {
       // Test basic connection to manager_settings table
-      const { error } = await supabase.from('manager_settings').select('count').limit(1);
+      const { error } = await supabase.from('manager_settings').select('count').single();
       
       if (error) {
         console.error('Connection test error:', error);
