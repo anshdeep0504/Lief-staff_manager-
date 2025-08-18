@@ -41,7 +41,6 @@ A comprehensive healthcare staff time tracking and management system built with 
 - **Charts**: Chart.js with react-chartjs-2
 - **Backend**: Supabase (PostgreSQL + Auth + Real-time)
 - **Styling**: Tailwind CSS
-- **PWA**: Service Workers, Web App Manifest
 - **Deployment**: Vercel-ready
 
 ## 📋 Prerequisites

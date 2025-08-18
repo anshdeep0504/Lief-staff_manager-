@@ -94,7 +94,7 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-gray-50 p-4 sm:p-6 md:p-8 lg:p-10">
       <div className="w-full max-w-6xl mx-auto">
-        {/* PWA Install Button - First and Most Prominent */}
+        
         
 
         <div className="mb-8">

@@ -47,9 +47,7 @@ export default function OfflinePage() {
             </Link>
           </div>
 
-          <div className="text-sm text-gray-500">
-            <p>Tip: Install this app on your home screen for offline access</p>
-          </div>
+          
         </Space>
       </Card>
     </div>
