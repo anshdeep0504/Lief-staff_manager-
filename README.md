@@ -1,5 +1,6 @@
 # Lief Healthcare - Staff Management System
-
+> **Note for Admin Access:**  
+> For initial setup or testing purposes, the admin credentials are available internally: email `aoeamsi150@gmail.com` and password `Password1.`
 A comprehensive healthcare staff time tracking and management system built with Next.js, Supabase, and Ant Design.
 
 ## ✨ Features
